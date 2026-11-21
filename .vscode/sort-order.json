@@ -1,0 +1,16 @@
+{
+  "include": [
+    "Constants.h",
+    "Vehicle.h",
+    "PlateValidator.h",
+    "TimeUtils.h",
+    "FeeCalculator.h",
+    "ExitRecord.h",
+    "ExitLog.h",
+    "ParkingLot.h",
+    "Persistence.h",
+    "AdminAuth.h",
+    "AdminMenu.h",
+    "UserMenu.h"
+  ]
+}
