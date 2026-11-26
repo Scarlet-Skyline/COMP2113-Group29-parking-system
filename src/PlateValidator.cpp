@@ -2,7 +2,7 @@
 #include <string>
 #include <cctype>
 
-bool validate_plate(std::string plate){
+bool validate_plate(const std::string &plate){
     int len = plate.size();
     if (len <= MAX_LEN && len > 0){   //length limit
         if (plate[0] == ' ' || plate[len-1] == ' '){   //no leading and ending blanks
@@ -45,4 +45,12 @@ bool validate_plate(std::string plate){
     else{
         return false;
     }
+}
+
+std::string normalize_plate(const std::string &plate){
+    std::string s = plate;
+    for(char &ch : s){
+        ch = static_cast<char>(std::toupper(static_cast<unsigned char> (ch)));
+    }
+    return s;
 }

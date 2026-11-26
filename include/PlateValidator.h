@@ -10,6 +10,7 @@ char const BAN_LIST[3] = {'I', 'O', 'Q'};
 //It can't resemble permit or licence numbers, such as "VV".
 //The letters "AM", "A", "F", "LC" and "ZG" are reserved for certain vehicles.
 
-bool validate_plate(std::string plate);
+bool validate_plate(const std::string &plate);
+std::string normalize_plate(const std::string &plate);
 
 #endif
