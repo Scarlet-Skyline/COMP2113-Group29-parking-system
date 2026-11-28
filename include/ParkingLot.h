@@ -34,8 +34,8 @@
 struct VehicleInfo
 {
     std::string plate; //!< Normalised plate.
-    int hour;
-    DateTime when;          //!< Entry hour (parked) or joining hour (queued).
+    int hour;          //!< Entry hour (parked) or joining hour (queued).
+    DateTime when;     //!< Full entry / joining time, used by Persistence.
 };
 
 /**
@@ -73,6 +73,7 @@ struct ExitResult
     Status status{NOT_PARKED};
     int durationHours{0};          //!< Charged hours.
     double fee{0.0};               //!< Fee in HKD (FeeCalculator).
+    double purchase{0.0};          //!< Purchase amount used for the discounts.
     int remainingSpaces{0};        //!< Free spaces after the operation.
     bool promotedFromQueue{false}; //!< true if a queued vehicle was admitted.
     std::string promotedPlate;     //!< That vehicle's plate.
@@ -127,8 +128,16 @@ public:
      *
      * The fee comes from FeeCalculator, the session is pushed onto the exit
      * log, and queued vehicles are admitted while spaces remain.
+     *
+     * @param plate    Plate as typed by the user.
+     * @param now      When the vehicle leaves.
+     * @param purchase Amount the driver spent in the mall during the stay.
+     *                 FeeCalculator grants free hours for at least 300 HKD on a
+     *                 weekday (400 HKD at the weekend).  Defaults to 0.0 (no
+     *                 receipt), which is what UserMenu currently passes.
      */
-    ExitResult exitVehicle(const std::string &plate, const DateTime &now);
+    ExitResult exitVehicle(const std::string &plate, const DateTime &now,
+                           double purchase = 0.0);
 
     /**
      * @brief Remove a vehicle from the waiting queue (outline module 5).
