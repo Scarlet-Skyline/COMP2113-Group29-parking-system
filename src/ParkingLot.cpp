@@ -9,6 +9,7 @@
 
 #include "FeeCalculator.h"
 #include "PlateValidator.h"
+#include "TimeUtils.h"
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -91,7 +92,7 @@ std::vector<VehicleInfo> ParkingLot::getParkedSnapshot() const
         VehicleInfo info;
         info.plate = parkedVehicles_[i]->plate;
         info.hour = parkedVehicles_[i]->EntryTime.hour;
-        info.when  = parkedVehicles_[i]->EntryTime;
+        info.when = parkedVehicles_[i]->EntryTime;
         snapshot.push_back(info);
     }
 
@@ -114,7 +115,7 @@ std::vector<VehicleInfo> ParkingLot::getWaitingSnapshot() const
         VehicleInfo info;
         info.plate = vehicle->plate;
         info.hour = vehicle->EntryTime.hour;
-        info.when  = vehicle->EntryTime;
+        info.when = vehicle->EntryTime;
         snapshot.push_back(info);
 
         waitingQueue_.push(std::move(vehicle));
@@ -202,7 +203,8 @@ EnterResult ParkingLot::enterVehicle(const std::string &plate, const DateTime &n
 // Exit
 // ---------------------------------------------------------------------------
 
-ExitResult ParkingLot::exitVehicle(const std::string &plate, const DateTime &now)
+ExitResult ParkingLot::exitVehicle(const std::string &plate, const DateTime &now,
+                                   double purchase)
 {
     const std::string normalised = normalize_plate(plate);
 
@@ -218,9 +220,15 @@ ExitResult ParkingLot::exitVehicle(const std::string &plate, const DateTime &now
 
     const DateTime entryTime = parkedVehicles_[index]->EntryTime;
 
+    // A negative amount is treated as "no receipt".
+    if (purchase < 0.0)
+    {
+        purchase = 0.0;
+    }
+
     const Scenario scenario = calculateDuration(entryTime, now);
     const double fee =
-        static_cast<double>(calculateAmount(scenario, 0.0));
+        static_cast<double>(calculateAmount(scenario, purchase));
 
     ExitRecord record;
     record.licensePlate = parkedVehicles_[index]->plate;
@@ -240,6 +248,7 @@ ExitResult ParkingLot::exitVehicle(const std::string &plate, const DateTime &now
     result.status = ExitResult::SUCCESS;
     result.durationHours = scenario.duration;
     result.fee = fee;
+    result.purchase = purchase;
     result.remainingSpaces = remainingSpaces();
 
     if (!admitted.empty())
