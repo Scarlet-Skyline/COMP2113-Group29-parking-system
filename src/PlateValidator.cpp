@@ -2,6 +2,18 @@
 #include <string>
 #include <cctype>
 
+/**
+ * @brief Check a plate string against this system's plate-format rules.
+ *
+ * Rejects: empty or longer than MAX_LEN (blanks count), leading/trailing
+ * blank, two blanks in a row, "VV", any of I/O/Q, any character other than
+ * A-Z, 0-9 and blank, and five or more identical characters in a row.
+ * Based on Hong Kong vehicle plates rules
+ * @param plate Plate text. Must already be upper case, so call
+ *              normalize_plate() first; "ab1" is rejected.
+ * @return true if every rule above is satisfied, false otherwise.
+ */
+
 bool validate_plate(const std::string &plate){
     int len = plate.size();
     if (len <= MAX_LEN && len > 0){   //length limit
@@ -46,6 +58,15 @@ bool validate_plate(const std::string &plate){
         return false;
     }
 }
+
+/**
+* @brief make sure that the plate numbers are all in capital
+* Turn every lower case character in the input to upper case.
+* e.g. "ab12" -> "AB12", "ABC24" -> "ABC24"
+* @param plate Plate text. 
+*              e.g. "ab12", "ABC24"
+* @return normalized plate number string all in capital
+**/
 
 std::string normalize_plate(const std::string &plate){
     std::string s = plate;
