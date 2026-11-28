@@ -10,30 +10,26 @@
 #include <thread>
 #include <cstdlib>
 
-#include "Constants.h"
-#include "ParkingLot.h"
-#include "Persistence.h"
-#include "AdminMenu.h"
-#include "UserMenu.h"
+#include "include/Constants.h"
+#include "include/ParkingLot.h"
+#include "include/Persistence.h"
+#include "include/AdminMenu.h"
+#include "include/UserMenu.h"
 
 namespace
 {
 
     const int SPLASH_DELAY_SECONDS = 2; // each splash page stays 2 seconds
 
-    /**
-     * @brief Clear the terminal screen and move the cursor to the top-left.
-     *        Uses ANSI escape sequences, which work on the CS Academy Linux server.
-     */
     void clearScreen()
     {
-        std::cout << "\033[2J\033[H" << std::flush;
+#ifdef _WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
     }
 
-    /**
-     * @brief Pause the program for the given number of seconds.
-     * @param seconds Duration to sleep.
-     */
     void sleepForSeconds(int seconds)
     {
         std::this_thread::sleep_for(std::chrono::seconds(seconds));
@@ -91,13 +87,17 @@ namespace
         clearScreen();
     }
 
-    /**
-     * @brief Display the top-level main menu.
-     * @param lot The parking lot object, used only to show a short status summary.
-     */
     void printMainMenu(const ParkingLot &lot)
     {
-        std::cout << "\n========================================\n";
+
+        clearScreen();
+
+        std::cout << "\n";
+        std::cout << "        \033[34m    .--.   \033[0m\n";
+        std::cout << "        \033[34m .-(    ). \033[0m\n";
+        std::cout << "        \033[34m(___.__)__)\033[0m\n\n";
+
+        std::cout << "========================================\n";
         std::cout << "Remaining parking spaces: " << lot.remainingSpaces() << "\n";
         std::cout << "Vehicles in waiting queue: " << lot.queueSize() << "\n";
         std::cout << "----------------------------------------\n";
@@ -106,6 +106,12 @@ namespace
         std::cout << "0. Exit\n";
         std::cout << "----------------------------------------\n";
         std::cout << "Please enter your choice: ";
+
+        std::cout << "\n\n";
+        std::cout << "                        \033[33m    __      \033[0m\n";
+        std::cout << "                        \033[33m  _/  \\_    \033[0m\n";
+        std::cout << "                        \033[33m (o)---(o)  \033[0m\n";
+        std::cout << "-------------------------------------------------------------------------\n";
     }
 
     /**
@@ -113,7 +119,7 @@ namespace
      * @return The parsed integer, -1 if input is closed/EOF,
      *         or -999 if the input is not a valid integer.
      */
-    int readChoice()
+    int readInt()
     {
         std::string line;
         if (!std::getline(std::cin, line))
@@ -145,10 +151,10 @@ namespace
      */
     void saveQuietly(const ParkingLot &lot)
     {
-        if (!Persistence::save(lot, DATA_DIR))
+        if (!Persistence::save(lot, DATA_FILE))
         {
             std::cerr << "[Warning] Failed to save parking lot data to \""
-                      << DATA_DIR << "\".\n";
+                      << DATA_FILE << "\".\n";
         }
     }
 
@@ -160,9 +166,9 @@ int main()
     showSplashScreen();
 
     // ---------- Load persistent data ----------
-    ParkingLot lot(PARKING_CAPACITY);
+    ParkingLot lot(DEFAULT_CAPACITY);
 
-    if (!Persistence::load(lot, DATA_DIR))
+    if (!Persistence::load(lot, DATA_FILE))
     {
         std::cout << "[Info] No existing data loaded. "
                   << "Starting with an empty parking lot.\n";
@@ -178,7 +184,7 @@ int main()
     {
         printMainMenu(lot);
 
-        int choice = readChoice();
+        int choice = readInt();
 
         if (choice == -1)
         {
@@ -190,12 +196,16 @@ int main()
         {
         case 1:
             // Administrator mode: password checking is handled inside AdminMenu.
+            clearScreen();
+            std::cout << "\033[1;31m[ Admin Mode ]\033[0m\n\n";
             AdminMenu::run(lot);
             saveQuietly(lot);
             break;
 
         case 2:
             // User mode: entry/exit/queue cancellation operations.
+            clearScreen();
+            std::cout << "\033[1;32m[ User Mode ]\033[0m\n\n";
             UserMenu::run(lot);
             saveQuietly(lot);
             break;
@@ -211,7 +221,7 @@ int main()
     }
 
     // ---------- Final save before exit ----------
-    if (Persistence::save(lot, DATA_DIR))
+    if (Persistence::save(lot, DATA_FILE))
     {
         std::cout << "Parking lot data saved. Goodbye.\n";
     }

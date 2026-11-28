@@ -91,6 +91,7 @@ std::vector<VehicleInfo> ParkingLot::getParkedSnapshot() const
         VehicleInfo info;
         info.plate = parkedVehicles_[i]->plate;
         info.hour = parkedVehicles_[i]->EntryTime.hour;
+        info.when  = parkedVehicles_[i]->EntryTime;
         snapshot.push_back(info);
     }
 
@@ -113,6 +114,7 @@ std::vector<VehicleInfo> ParkingLot::getWaitingSnapshot() const
         VehicleInfo info;
         info.plate = vehicle->plate;
         info.hour = vehicle->EntryTime.hour;
+        info.when  = vehicle->EntryTime;
         snapshot.push_back(info);
 
         waitingQueue_.push(std::move(vehicle));
@@ -222,8 +224,8 @@ ExitResult ParkingLot::exitVehicle(const std::string &plate, const DateTime &now
 
     ExitRecord record;
     record.licensePlate = parkedVehicles_[index]->plate;
-    record.entryTime = entryTime;
-    record.exitTime = now;
+    record.entryTime = toTimeT(entryTime);
+    record.exitTime = toTimeT(now);
     record.fee = fee;
 
     // The unique_ptr deletes the Vehicle as it leaves the vector.

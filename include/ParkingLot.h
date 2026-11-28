@@ -34,7 +34,8 @@
 struct VehicleInfo
 {
     std::string plate; //!< Normalised plate.
-    int hour;          //!< Entry hour (parked) or joining hour (queued).
+    int hour;
+    DateTime when;          //!< Entry hour (parked) or joining hour (queued).
 };
 
 /**
