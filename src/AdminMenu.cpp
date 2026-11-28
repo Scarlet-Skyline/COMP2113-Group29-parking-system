@@ -6,12 +6,35 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <cstdlib>
 
 namespace
 {
 
     const int MENU_EOF = -1;
     const int MENU_INVALID = -999;
+
+    void clearScreen()
+    {
+#ifdef _WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
+    }
+
+    // 等待用户按 0 返回
+    void waitForReturn()
+    {
+        std::cout << "\nPress 0 to return to menu: ";
+        std::string line;
+        while (std::getline(std::cin, line))
+        {
+            if (line == "0")
+                break;
+            std::cout << "Please press 0 to return to menu: ";
+        }
+    }
 
     // Read a line of integers; Enter non numeric values to return MENU-INVALID, EOF to return MENU-EOF
     int readInt()
@@ -41,21 +64,25 @@ namespace
         return line;
     }
 
-    std::string formatTimestamp(std::time_t t) {
-    if (t == 0) return "-";
-    std::tm tmv{};
-    #ifdef _WIN32
-    localtime_s(&tmv, &t);
-    #else
-    localtime_r(&t, &tmv);
-    #endif
-    char buf[32];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &tmv);
-    return std::string(buf);
-}
+    std::string formatTimestamp(std::time_t t)
+    {
+        if (t == 0)
+            return "-";
+        std::tm tmv{};
+#ifdef _WIN32
+        localtime_s(&tmv, &t);
+#else
+        localtime_r(&t, &tmv);
+#endif
+        char buf[32];
+        std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &tmv);
+        return std::string(buf);
+    }
 
     void printAdminMenu()
     {
+        std::cout << "\033[1;31m[ ADMIN MODE ]\033[0m\n";
+        std::cout << "----------------------------------------\n";
         std::cout << "\n========== Administrator Menu ==========\n";
         std::cout << "1. View parked vehicles & waiting queue\n";
         std::cout << "2. View exit log (sorted by exit time)\n";
@@ -132,7 +159,7 @@ namespace
                       << std::setw(20) << formatTimestamp(r.exitTime)
                       << std::setw(10) << std::fixed << std::setprecision(2) << hours
                       << std::fixed << std::setprecision(2) << r.fee << "\n";
-            std::cout.unsetf(std::ios::floatfield);          
+            std::cout.unsetf(std::ios::floatfield);
         }
     }
 
@@ -163,13 +190,15 @@ namespace AdminMenu
         if (!AdminAuth::verify(pwd))
         {
             std::cout << "Wrong password. Access denied.\n";
+            waitForReturn();
             return;
         }
-        std::cout << "Access granted.\n";
+        // std::cout << "Access granted.\n";
 
         bool running = true;
         while (running)
         {
+            clearScreen();
             printAdminMenu();
             const int choice = readInt();
 
@@ -182,13 +211,19 @@ namespace AdminMenu
             switch (choice)
             {
             case 1:
+                clearScreen();
                 showParkedVehicles(lot);
+                waitForReturn();
                 break;
             case 2:
+                clearScreen();
                 showExitLog(lot);
+                waitForReturn();
                 break;
             case 3:
+                clearScreen();
                 clearExitLog(lot);
+                waitForReturn();
                 break;
             case 0:
                 running = false;

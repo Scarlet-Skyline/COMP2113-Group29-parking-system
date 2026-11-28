@@ -31,5 +31,22 @@ int getWeekday(const DateTime &d){
     t.tm_hour = 12;
     t.tm_isdst = -1;
     std::mktime(&t);
-    return t.tm_wday;                 // 0 = Sunday ... 6 = Saturday
+    return t.tm_wday;
+}                 // 0 = Sunday... 6 = Saturday
+
+DateTime getCurrentDateTime() {
+    std::time_t t = std::time(nullptr);
+    std::tm tmv{};
+#ifdef _WIN32
+    localtime_s(&tmv, &t);
+#else
+    localtime_r(&t, &tmv);
+#endif
+    DateTime d{};
+    d.year   = tmv.tm_year + 1900;
+    d.month  = tmv.tm_mon + 1;
+    d.day    = tmv.tm_mday;
+    d.hour   = tmv.tm_hour;
+    d.minute = tmv.tm_min;
+    return d;
 }

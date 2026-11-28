@@ -196,16 +196,12 @@ int main()
         {
         case 1:
             // Administrator mode: password checking is handled inside AdminMenu.
-            clearScreen();
-            std::cout << "\033[1;31m[ Admin Mode ]\033[0m\n\n";
             AdminMenu::run(lot);
             saveQuietly(lot);
             break;
 
         case 2:
             // User mode: entry/exit/queue cancellation operations.
-            clearScreen();
-            std::cout << "\033[1;32m[ User Mode ]\033[0m\n\n";
             UserMenu::run(lot);
             saveQuietly(lot);
             break;

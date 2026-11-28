@@ -13,4 +13,6 @@ DateTime parseDateTime(const std::string &date, const std::string &timeStr);
 std::time_t toTimeT(const DateTime &d);
 int getWeekday(const DateTime &d);  // 0 = Sunday ... 6 = Saturday
 
+DateTime getCurrentDateTime(); 
+
 #endif

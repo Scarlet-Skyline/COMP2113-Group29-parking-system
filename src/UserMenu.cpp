@@ -13,6 +13,28 @@ namespace
     const int MENU_EOF = -1;
     const int MENU_INVALID = -999;
 
+    void clearScreen()
+    {
+#ifdef _WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
+    }
+
+    // 等待用户按 0 返回
+    void waitForReturn()
+    {
+        std::cout << "\nPress 0 to return to menu: ";
+        std::string line;
+        while (std::getline(std::cin, line))
+        {
+            if (line == "0")
+                break;
+            std::cout << "Please press 0 to return to menu: ";
+        }
+    }
+
     int readInt()
     {
         std::string line;
@@ -39,48 +61,10 @@ namespace
         return line;
     }
 
-    // Reading an hour from 0-23, illegally returning -1
-    bool readDateTime(const std::string &prompt, DateTime &out)
-    {
-        std::cout << prompt << " (dd/mm/yyyy hhmm): ";
-        std::string line = readLine();
-
-        std::istringstream iss(line);
-        char s1 = 0, s2 = 0;
-        std::string timeStr;
-        if (!(iss >> out.day >> s1 >> out.month >> s2 >> out.year >> timeStr))
-        {
-            return false;
-        }
-        if (s1 != '/' || s2 != '/')
-            return false;
-        if (out.day < 1 || out.day > 31)
-            return false;
-        if (out.month < 1 || out.month > 12)
-            return false;
-        if (out.year < 1970)
-            return false;
-        if (timeStr.size() != 4)
-            return false;
-        for (char c : timeStr)
-        {
-            if (!std::isdigit(static_cast<unsigned char>(c)))
-                return false;
-        }
-        const int hhmm = std::stoi(timeStr);
-        const int hh = hhmm / 100;
-        const int mm = hhmm % 100;
-        if (hh < 0 || hh > 23)
-            return false;
-        if (mm < 0 || mm > 59)
-            return false;
-        out.hour = hh;
-        out.minute = mm;
-        return true;
-    }
-
     void printUserMenu()
     {
+        std::cout << "\033[1;32m[ USER MODE ]\033[0m\n"; 
+        std::cout << "-----------------------------------\n";
         std::cout << "\n============ User Menu ============\n";
         std::cout << "1. Vehicle entry\n";
         std::cout << "2. Vehicle exit\n";
@@ -101,12 +85,10 @@ namespace
             return;
         }
 
-        DateTime when{};
-        if (!readDateTime("Enter entry time", when))
-        {
-            std::cout << "Invalid date/time format.\n";
-            return;
-        }
+        DateTime when = getCurrentDateTime();
+
+        std::cout << "System Time: " << when.day << "/" << when.month << "/" << when.year
+                  << " " << when.hour << ":" << (when.minute < 10 ? "0" : "") << when.minute << "\n";
 
         EnterResult r = lot.enterVehicle(plate, when);
 
@@ -153,12 +135,10 @@ namespace
             return;
         }
 
-        DateTime when{};
-        if (!readDateTime("Enter exit time", when))
-        {
-            std::cout << "Invalid date/time format.\n";
-            return;
-        }
+        DateTime when = getCurrentDateTime();
+
+        std::cout << "System Time: " << when.day << "/" << when.month << "/" << when.year
+                  << " " << when.hour << ":" << (when.minute < 10 ? "0" : "") << when.minute << "\n";
 
         ExitResult r = lot.exitVehicle(plate, when);
 
@@ -222,6 +202,7 @@ namespace UserMenu
         bool running = true;
         while (running)
         {
+            clearScreen();
             printUserMenu();
             int choice = readInt();
 
@@ -235,18 +216,22 @@ namespace UserMenu
             {
             case 1:
                 handleEnter(lot);
+                waitForReturn();
                 break;
             case 2:
                 handleExit(lot);
+                waitForReturn();
                 break;
             case 3:
                 handleCancel(lot);
+                waitForReturn();
                 break;
             case 0:
                 running = false;
                 break;
             default:
                 std::cout << "Invalid choice. Please enter 0-3.\n";
+                waitForReturn();
                 break;
             }
         }
